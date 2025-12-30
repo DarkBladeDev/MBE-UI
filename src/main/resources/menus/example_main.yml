@@ -1,0 +1,28 @@
+id: example:main
+title: "&bMain Menu"
+rows: 3
+slots:
+  11:
+    item: minecraft:chest
+    name: "&aOpen Paged"
+    lore:
+      - "&7Open paged menu"
+    actions:
+      - action: open_menu
+        args:
+          id: example:paged
+  15:
+    item: minecraft:book
+    name: "&dOpen Java Menu"
+    lore:
+      - "&7Opens provider menu"
+    actions:
+      - action: open_menu
+        args:
+          id: example:java
+  22:
+    item: minecraft:barrier
+    name: "&cClose"
+    actions:
+      - action: close
+

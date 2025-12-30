@@ -1,0 +1,32 @@
+id: example:paged
+title: "&3Paged Menu &7(Page <variable:page>)"
+rows: 6
+pagination:
+  source: machine.recipes
+  page_size: 45
+  from_slot: 0
+  to_slot: 44
+  template:
+    item: minecraft:paper
+    name: "&a<variable:entry_name>"
+    lore:
+      - "&7Index: <variable:entry_index>"
+slots:
+  45:
+    item: minecraft:arrow
+    name: "&ePrevious"
+    actions:
+      - action: previous_page
+  53:
+    item: minecraft:arrow
+    name: "&eNext"
+    actions:
+      - action: next_page
+  49:
+    item: minecraft:barrier
+    name: "&cBack"
+    actions:
+      - action: open_menu
+        args:
+          id: example:main
+
