@@ -9,7 +9,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,16 +19,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class MenuParser {
-    private final String addonId;
     private final Logger logger;
     private final MenuSchemaValidator validator;
+    private final Path menusDir;
 
-    public MenuParser(String addonId, Logger logger) {
-        this.addonId = Objects.requireNonNull(addonId, "addonId");
+    private static final Pattern SAFE_ACTION_ID = Pattern.compile("[a-z0-9_:\\-]+", Pattern.CASE_INSENSITIVE);
+
+    public MenuParser(Path menusDir, Logger logger) {
+        this.menusDir = Objects.requireNonNull(menusDir, "menusDir");
         this.logger = Objects.requireNonNull(logger, "logger");
         this.validator = new MenuSchemaValidator();
     }
@@ -44,21 +46,7 @@ public final class MenuParser {
             loadFromResource(resource).ifPresent(out::add);
         }
 
-        resolveExternalMenusDir().ifPresent(dir -> {
-            if (!Files.isDirectory(dir)) {
-                return;
-            }
-            try (var stream = Files.list(dir)) {
-                stream
-                        .filter(p -> {
-                            String n = p.getFileName().toString().toLowerCase();
-                            return n.endsWith(".yml") || n.endsWith(".yaml");
-                        })
-                        .forEach(p -> loadFromFile(p.toFile()).ifPresent(out::add));
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "[UXAddon] Failed listing menus directory: " + dir, e);
-            }
-        });
+        loadFromMenusDir(out);
 
         return out;
     }
@@ -70,7 +58,7 @@ public final class MenuParser {
             }
 
             YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
-            return parse(yaml, resourcePath);
+            return parseYaml(yaml, resourcePath);
         } catch (Exception e) {
             logger.log(Level.WARNING, "[UXAddon] Failed loading menu resource: " + resourcePath, e);
             return Optional.empty();
@@ -80,15 +68,14 @@ public final class MenuParser {
     private Optional<MenuDefinition> loadFromFile(File file) {
         try {
             YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
-            return parse(yaml, file.getName());
+            return parseYaml(yaml, file.getName());
         } catch (Exception e) {
             logger.log(Level.WARNING, "[UXAddon] Failed loading menu file: " + file.getAbsolutePath(), e);
             return Optional.empty();
         }
     }
 
-    private Optional<MenuDefinition> parse(YamlConfiguration yaml, String sourceName) {
-        Map<String, Object> raw = yaml.getValues(true);
+    public Optional<MenuDefinition> parseYaml(YamlConfiguration yaml, String sourceName) {
         List<String> errors = validator.validate(yaml);
         if (!errors.isEmpty()) {
             String id = yaml.getString("id", "<missing>");
@@ -127,7 +114,14 @@ public final class MenuParser {
         Optional<PaginationDefinition> pagination = Optional.ofNullable(yaml.getConfigurationSection("pagination"))
                 .map(this::parsePagination);
 
-        return Optional.of(new MenuDefinition(id, title, rows, slots, pagination));
+        MenuDefinition def = new MenuDefinition(id, title, rows, slots, pagination);
+        List<String> securityErrors = validateSecurity(def);
+        if (!securityErrors.isEmpty()) {
+            logger.warning("[UXAddon] YAML rejected by security validation. source=" + sourceName + " id=" + id + " errors=" + securityErrors);
+            return Optional.empty();
+        }
+
+        return Optional.of(def);
     }
 
     private SlotDefinition parseSlot(ConfigurationSection section) {
@@ -178,21 +172,104 @@ public final class MenuParser {
         return new PaginationDefinition(source, pageSize, fromSlot, toSlot, template);
     }
 
-    private Optional<Path> resolveExternalMenusDir() {
+    private void loadFromMenusDir(List<MenuDefinition> out) {
+        if (!Files.isDirectory(menusDir)) {
+            return;
+        }
+
+        if (!Files.isReadable(menusDir)) {
+            logger.warning("[UXAddon][FS] Menus directory not readable: " + menusDir);
+            return;
+        }
+
+        List<Path> files;
         try {
-            var location = MenuParser.class.getProtectionDomain().getCodeSource().getLocation();
-            if (location == null) {
-                return Optional.empty();
-            }
-            Path self = Path.of(location.toURI());
-            Path baseDir = Files.isDirectory(self) ? self : self.getParent();
-            if (baseDir == null) {
-                return Optional.empty();
-            }
-            return Optional.of(baseDir.resolve("menus"));
-        } catch (URISyntaxException e) {
-            return Optional.empty();
+            files = findMenuFilesRecursively(menusDir);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "[UXAddon] Failed listing menus directory: " + menusDir, e);
+            return;
+        }
+
+        for (Path p : files) {
+            loadFromFile(p.toFile()).ifPresent(out::add);
         }
     }
-}
 
+    private List<Path> findMenuFilesRecursively(Path root) throws Exception {
+        try (var stream = Files.walk(root)) {
+            return stream
+                    .filter(Files::isRegularFile)
+                    .filter(p -> {
+                        String n = p.getFileName().toString().toLowerCase();
+                        return n.endsWith(".yml") || n.endsWith(".yaml");
+                    })
+                    .sorted((a, b) -> a.toString().compareToIgnoreCase(b.toString()))
+                    .toList();
+        }
+    }
+
+    private List<String> validateSecurity(MenuDefinition def) {
+        List<String> errors = new ArrayList<>();
+        for (SlotDefinition slot : def.slots().values()) {
+            for (ActionCall call : slot.actions()) {
+                if (call == null) {
+                    continue;
+                }
+                String action = call.action();
+                if (action == null || action.isBlank() || !SAFE_ACTION_ID.matcher(action).matches()) {
+                    errors.add("InvalidActionId:" + String.valueOf(action));
+                    continue;
+                }
+                if (call.args() != null) {
+                    for (var e : call.args().entrySet()) {
+                        if (e.getKey() == null || e.getKey().isBlank()) {
+                            errors.add("InvalidArgKey:" + action);
+                            continue;
+                        }
+                        Object v = e.getValue();
+                        if (!isSafeValue(v)) {
+                            errors.add("InvalidArgValue:" + action + ":" + e.getKey());
+                        }
+                        if ("run_command".equalsIgnoreCase(action) && "command".equalsIgnoreCase(e.getKey()) && v instanceof String s) {
+                            if (s.contains("\n") || s.contains("\r")) {
+                                errors.add("InvalidCommandNewline");
+                            }
+                        }
+                        if ("open_menu".equalsIgnoreCase(action) && "id".equalsIgnoreCase(e.getKey()) && v instanceof String s) {
+                            if (s.isBlank() || s.chars().anyMatch(Character::isWhitespace)) {
+                                errors.add("InvalidOpenMenuId");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return errors;
+    }
+
+    private boolean isSafeValue(Object v) {
+        if (v == null) {
+            return true;
+        }
+        if (v instanceof String || v instanceof Number || v instanceof Boolean || v instanceof Character) {
+            return true;
+        }
+        if (v instanceof List<?> list) {
+            for (Object o : list) {
+                if (!isSafeValue(o)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (v instanceof Map<?, ?> map) {
+            for (var e : map.entrySet()) {
+                if (!(e.getKey() instanceof String) || !isSafeValue(e.getValue())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+}

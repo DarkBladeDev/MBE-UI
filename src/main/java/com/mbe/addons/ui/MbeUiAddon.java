@@ -10,6 +10,9 @@ import com.mbe.addons.ui.runtime.SessionManager;
 import com.mbe.addons.ui.ux.UXAddon;
 import com.mbe.addons.ui.ux.examples.ExampleJavaMenuProvider;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 
 public final class MbeUiAddon implements MultiblockAddon {
@@ -32,6 +35,13 @@ public final class MbeUiAddon implements MultiblockAddon {
 
         if (ctx.getApiVersion() != 1) {
             throw new AddonException(getId(), "Incompatible API", true, AddonException.Phase.LOAD, "apiVersion");
+        }
+
+        Path menusDir = ctx.getDataFolder().resolve("menus");
+        try {
+            Files.createDirectories(menusDir);
+        } catch (IOException | SecurityException e) {
+            throw new AddonException(getId(), "Cannot create required folder: menus", e, true, AddonException.Phase.LOAD, "fs");
         }
 
         this.sessionManager = new SessionManager(ctx);
