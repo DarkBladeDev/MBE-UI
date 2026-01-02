@@ -1,4 +1,4 @@
-package com.mbe.addons.ui.api;
+package com.mbe.addons.ui.ui;
 
 import org.bukkit.inventory.ItemStack;
 
@@ -7,4 +7,3 @@ public interface MenuItem {
 
     void onClick(MenuClickContext ctx);
 }
-

@@ -6,14 +6,14 @@ import com.mbe.addons.ui.api.PlayerContext;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.darkbladedev.engine.api.logging.EngineLogger;
+
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 final class DiffEngine {
-    private final Logger logger;
+    private final EngineLogger logger;
 
-    DiffEngine(Logger logger) {
+    DiffEngine(EngineLogger logger) {
         this.logger = logger;
     }
 
@@ -46,7 +46,7 @@ final class DiffEngine {
                     rendered = newItem.render(playerContext);
                 }
             } catch (Throwable t) {
-                logger.log(Level.SEVERE, "Error rendering slot " + slot + " for menu " + session.menu().id(), t);
+                logger.error("Error rendering slot " + slot + " for menu " + session.menu().id(), t);
                 rendered = ErrorItemFactory.errorItem();
             }
 

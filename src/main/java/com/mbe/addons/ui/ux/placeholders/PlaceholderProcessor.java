@@ -2,9 +2,10 @@ package com.mbe.addons.ui.ux.placeholders;
 
 import org.bukkit.entity.Player;
 
+import com.darkbladedev.engine.api.logging.EngineLogger;
+
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 public final class PlaceholderProcessor {
     private static final Set<String> warnedInvalid = ConcurrentHashMap.newKeySet();
@@ -13,7 +14,7 @@ public final class PlaceholderProcessor {
     private PlaceholderProcessor() {
     }
 
-    public static String process(Logger logger, Player player, String input) {
+    public static String process(EngineLogger logger, Player player, String input) {
         if (input == null || input.isEmpty()) {
             return "";
         }
@@ -23,7 +24,7 @@ public final class PlaceholderProcessor {
         for (String token : PlaceholderSyntax.extractDollarTokens(normalized)) {
             if (!PlaceholderSyntax.isValidToken(token)) {
                 if (warnedInvalid.add(token)) {
-                    logger.warning("[UXAddon][Action:placeholder] Cause: InvalidPlaceholderToken token=" + token);
+                    logger.warn("[UXAddon][Action:placeholder] Cause: InvalidPlaceholderToken token=" + token);
                 }
                 return input;
             }
@@ -40,7 +41,7 @@ public final class PlaceholderProcessor {
 
         for (String token : PlaceholderSyntax.extractPercentTokens(expanded)) {
             if (warnedUnresolved.add(token)) {
-                logger.warning("[UXAddon][Action:placeholder] Cause: PlaceholderNotRecognized token=%" + token + "%");
+                logger.warn("[UXAddon][Action:placeholder] Cause: PlaceholderNotRecognized token=%" + token + "%");
             }
         }
 
@@ -51,4 +52,3 @@ public final class PlaceholderProcessor {
         return s == null ? "" : s;
     }
 }
-

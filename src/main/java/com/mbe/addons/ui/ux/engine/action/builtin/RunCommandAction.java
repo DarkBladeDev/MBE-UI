@@ -4,18 +4,19 @@ import com.mbe.addons.ui.ux.engine.action.MenuAction;
 import com.mbe.addons.ui.ux.engine.runtime.MenuContext;
 import com.mbe.addons.ui.ux.placeholders.PlaceholderProcessor;
 
+import com.darkbladedev.engine.api.logging.EngineLogger;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.logging.Logger;
 
 public final class RunCommandAction implements MenuAction {
     private static final Pattern VAR = Pattern.compile("<variable:([^>]+)>");
 
-    private final Logger logger;
+    private final EngineLogger logger;
 
-    public RunCommandAction(Logger logger) {
+    public RunCommandAction(EngineLogger logger) {
         this.logger = Objects.requireNonNull(logger, "logger");
     }
 

@@ -10,16 +10,17 @@ import com.mbe.addons.ui.ux.engine.runtime.MenuContext;
 import com.mbe.addons.ui.ux.engine.runtime.MenuRuntime;
 import com.mbe.addons.ui.ux.engine.runtime.RenderVariableCache;
 
+import com.darkbladedev.engine.api.logging.EngineLogger;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 public final class MenuRenderer {
-    private final Logger logger;
+    private final EngineLogger logger;
 
-    public MenuRenderer(Logger logger) {
+    public MenuRenderer(EngineLogger logger) {
         this.logger = Objects.requireNonNull(logger, "logger");
     }
 

@@ -7,6 +7,9 @@ import com.mbe.addons.ui.ux.engine.model.SlotDefinition;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import com.darkbladedev.engine.api.logging.EngineLogger;
+import com.darkbladedev.engine.api.logging.LogLevel;
+
 import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -20,17 +23,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public final class MenuParser {
-    private final Logger logger;
+    private final EngineLogger logger;
     private final MenuSchemaValidator validator;
     private final Path menusDir;
 
     private static final Pattern SAFE_ACTION_ID = Pattern.compile("[a-z0-9_:\\-]+", Pattern.CASE_INSENSITIVE);
 
-    public MenuParser(Path menusDir, Logger logger) {
+    public MenuParser(Path menusDir, EngineLogger logger) {
         this.menusDir = Objects.requireNonNull(menusDir, "menusDir");
         this.logger = Objects.requireNonNull(logger, "logger");
         this.validator = new MenuSchemaValidator();
@@ -60,7 +61,7 @@ public final class MenuParser {
             YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
             return parseYaml(yaml, resourcePath);
         } catch (Exception e) {
-            logger.log(Level.WARNING, "[UXAddon] Failed loading menu resource: " + resourcePath, e);
+            logger.log(LogLevel.WARN, "[UXAddon] Failed loading menu resource: " + resourcePath, e);
             return Optional.empty();
         }
     }
@@ -70,7 +71,7 @@ public final class MenuParser {
             YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
             return parseYaml(yaml, file.getName());
         } catch (Exception e) {
-            logger.log(Level.WARNING, "[UXAddon] Failed loading menu file: " + file.getAbsolutePath(), e);
+            logger.log(LogLevel.WARN, "[UXAddon] Failed loading menu file: " + file.getAbsolutePath(), e);
             return Optional.empty();
         }
     }
@@ -79,7 +80,7 @@ public final class MenuParser {
         List<String> errors = validator.validate(yaml);
         if (!errors.isEmpty()) {
             String id = yaml.getString("id", "<missing>");
-            logger.warning("[UXAddon] YAML invalid, menu disabled. source=" + sourceName + " id=" + id + " errors=" + errors);
+            logger.warn("[UXAddon] YAML invalid, menu disabled. source=" + sourceName + " id=" + id + " errors=" + errors);
             return Optional.empty();
         }
 
@@ -117,7 +118,7 @@ public final class MenuParser {
         MenuDefinition def = new MenuDefinition(id, title, rows, slots, pagination);
         List<String> securityErrors = validateSecurity(def);
         if (!securityErrors.isEmpty()) {
-            logger.warning("[UXAddon] YAML rejected by security validation. source=" + sourceName + " id=" + id + " errors=" + securityErrors);
+            logger.warn("[UXAddon] YAML rejected by security validation. source=" + sourceName + " id=" + id + " errors=" + securityErrors);
             return Optional.empty();
         }
 
@@ -178,7 +179,7 @@ public final class MenuParser {
         }
 
         if (!Files.isReadable(menusDir)) {
-            logger.warning("[UXAddon][FS] Menus directory not readable: " + menusDir);
+            logger.warn("[UXAddon][FS] Menus directory not readable: " + menusDir);
             return;
         }
 
@@ -186,7 +187,7 @@ public final class MenuParser {
         try {
             files = findMenuFilesRecursively(menusDir);
         } catch (Exception e) {
-            logger.log(Level.WARNING, "[UXAddon] Failed listing menus directory: " + menusDir, e);
+            logger.log(LogLevel.WARN, "[UXAddon] Failed listing menus directory: " + menusDir, e);
             return;
         }
 

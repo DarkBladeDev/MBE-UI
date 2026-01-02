@@ -1,7 +1,9 @@
 package com.mbe.addons.ui.ux.engine;
 
 import com.darkbladedev.engine.api.addon.AddonContext;
-import com.mbe.addons.ui.api.UI;
+import com.darkbladedev.engine.api.logging.EngineLogger;
+import com.darkbladedev.engine.api.logging.LogLevel;
+import com.mbe.addons.ui.ui.UI;
 import com.mbe.addons.ui.ux.engine.action.MenuActionRegistry;
 import com.mbe.addons.ui.ux.engine.action.builtin.CloseAction;
 import com.mbe.addons.ui.ux.engine.action.builtin.NextPageAction;
@@ -31,12 +33,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public final class MenuEngine {
     private final AddonContext context;
-    private final Logger logger;
+    private final EngineLogger logger;
     private final Path menusDir;
 
     private final MenuParser parser;
@@ -51,7 +51,7 @@ public final class MenuEngine {
         this.context = Objects.requireNonNull(context, "context");
         this.logger = context.getLogger();
 
-        this.menusDir = context.getDataFolder().resolve("menus");
+        this.menusDir = resolveMenusDir(context);
 
         this.parser = new MenuParser(menusDir, logger);
         this.renderer = new MenuRenderer(logger);
@@ -131,6 +131,10 @@ public final class MenuEngine {
         return actionRegistry;
     }
 
+    public MenuRuntime runtime() {
+        return runtime;
+    }
+
     public AddonContext context() {
         return context;
     }
@@ -143,7 +147,7 @@ public final class MenuEngine {
         try {
             runtime.open(menuId, contextFactory);
         } catch (Throwable t) {
-            logger.log(Level.SEVERE, "[UXAddon][Menu:" + menuId + "][Action:open_menu] Cause: " + t.getClass().getSimpleName(), t);
+            logger.error("[UXAddon][Menu:" + menuId + "][Action:open_menu] Cause: " + t.getClass().getSimpleName(), t);
         }
     }
 
@@ -160,15 +164,20 @@ public final class MenuEngine {
         actionRegistry.register("run_command", new RunCommandAction(logger));
     }
 
+    public static Path resolveMenusDir(AddonContext context) {
+        Objects.requireNonNull(context, "context");
+        return context.getDataFolder().resolve("menus");
+    }
+
     private boolean ensureWritableMenusDir() {
         try {
             Files.createDirectories(menusDir);
         } catch (Exception e) {
-            logger.log(Level.WARNING, "[UXAddon][FS] Cannot create menus directory: " + menusDir, e);
+            logger.log(LogLevel.WARN, "[UXAddon][FS] Cannot create menus directory: " + menusDir, e);
             return false;
         }
         if (!Files.isDirectory(menusDir) || !Files.isWritable(menusDir)) {
-            logger.warning("[UXAddon][FS] Menus directory not writable: " + menusDir);
+            logger.warn("[UXAddon][FS] Menus directory not writable: " + menusDir);
             return false;
         }
         return true;
@@ -176,7 +185,7 @@ public final class MenuEngine {
 
     private Optional<MenuDefinition> writeMenuYamlToDisk(String fileName, String yamlText) {
         if (yamlText.length() > 100_000) {
-            logger.warning("[UXAddon][FS] Menu YAML too large, rejected. file=" + fileName);
+            logger.warn("[UXAddon][FS] Menu YAML too large, rejected. file=" + fileName);
             return Optional.empty();
         }
 
@@ -184,7 +193,7 @@ public final class MenuEngine {
         try {
             target = resolveMenuFile(fileName);
         } catch (IllegalArgumentException e) {
-            logger.warning("[UXAddon][FS] Invalid menu file name, rejected. file=" + fileName);
+            logger.warn("[UXAddon][FS] Invalid menu file name, rejected. file=" + fileName);
             return Optional.empty();
         }
 
@@ -201,7 +210,7 @@ public final class MenuEngine {
         try {
             Files.writeString(target, yamlText, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (Exception e) {
-            logger.log(Level.WARNING, "[UXAddon][FS] Failed writing menu YAML. file=" + target, e);
+            logger.log(LogLevel.WARN, "[UXAddon][FS] Failed writing menu YAML. file=" + target, e);
             return Optional.empty();
         }
 

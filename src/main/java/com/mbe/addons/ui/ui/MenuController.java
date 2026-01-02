@@ -1,4 +1,4 @@
-package com.mbe.addons.ui.api;
+package com.mbe.addons.ui.ui;
 
 import org.bukkit.entity.Player;
 
@@ -9,4 +9,3 @@ public interface MenuController {
 
     void close(Player player);
 }
-

@@ -4,19 +4,20 @@ import com.mbe.addons.ui.ux.engine.model.ActionCall;
 import com.mbe.addons.ui.ux.engine.runtime.MenuContext;
 import com.mbe.addons.ui.ux.engine.runtime.MenuRuntimeOperations;
 
+import com.darkbladedev.engine.api.logging.EngineLogger;
+import com.darkbladedev.engine.api.logging.LogLevel;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public final class MenuActionRegistry {
-    private final Logger logger;
+    private final EngineLogger logger;
     private final MenuRuntimeOperations ops;
     private final Map<String, MenuAction> actions = new ConcurrentHashMap<>();
 
-    public MenuActionRegistry(Logger logger, MenuRuntimeOperations ops) {
+    public MenuActionRegistry(EngineLogger logger, MenuRuntimeOperations ops) {
         this.logger = Objects.requireNonNull(logger, "logger");
         this.ops = Objects.requireNonNull(ops, "ops");
     }
@@ -42,14 +43,14 @@ public final class MenuActionRegistry {
                 String actionId = call.action();
                 MenuAction action = actions.get(actionId);
                 if (action == null) {
-                    logger.warning("[UXAddon][Menu:" + ctx.menuId() + "][Action:" + actionId + "] Cause: ActionNotFound");
+                    logger.warn("[UXAddon][Menu:" + ctx.menuId() + "][Action:" + actionId + "] Cause: ActionNotFound");
                     continue;
                 }
 
                 try {
                     action.execute(ctx, call.args());
                 } catch (Throwable t) {
-                    logger.log(Level.WARNING, "[UXAddon][Menu:" + ctx.menuId() + "][Action:" + actionId + "] Cause: " + t.getClass().getSimpleName(), t);
+                    logger.log(LogLevel.WARN, "[UXAddon][Menu:" + ctx.menuId() + "][Action:" + actionId + "] Cause: " + t.getClass().getSimpleName(), t);
                 }
             }
         } finally {
@@ -57,4 +58,3 @@ public final class MenuActionRegistry {
         }
     }
 }
-

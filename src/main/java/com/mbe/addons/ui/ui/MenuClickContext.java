@@ -1,4 +1,4 @@
-package com.mbe.addons.ui.api;
+package com.mbe.addons.ui.ui;
 
 import org.bukkit.event.inventory.ClickType;
 
@@ -13,4 +13,3 @@ public interface MenuClickContext {
 
     void close();
 }
-

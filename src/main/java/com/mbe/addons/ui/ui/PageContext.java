@@ -1,4 +1,4 @@
-package com.mbe.addons.ui.api;
+package com.mbe.addons.ui.ui;
 
 public interface PageContext {
     int page();
@@ -17,4 +17,3 @@ public interface PageContext {
         return page() > 0;
     }
 }
-

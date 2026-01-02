@@ -1,20 +1,20 @@
 package com.mbe.addons.ui.ux.engine.runtime;
 
 import com.mbe.addons.ui.ux.placeholders.PlaceholderProcessor;
-import org.bukkit.ChatColor;
+
+import com.darkbladedev.engine.api.logging.EngineLogger;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.logging.Logger;
 
 final class VariableResolver {
     private static final Pattern VAR = Pattern.compile("<variable:([^>]+)>");
 
-    private final Logger logger;
+    private final EngineLogger logger;
 
-    VariableResolver(Logger logger) {
+    VariableResolver(EngineLogger logger) {
         this.logger = Objects.requireNonNull(logger, "logger");
     }
 
@@ -34,7 +34,7 @@ final class VariableResolver {
             return PlaceholderProcessor.process(logger, ctx.player(), withVars);
         });
 
-        return ChatColor.translateAlternateColorCodes('&', resolved);
+        return resolved;
     }
 
     private String replaceVars(String input, Map<String, Object> vars) {

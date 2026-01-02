@@ -1,6 +1,7 @@
 package com.mbe.addons.ui.runtime;
 
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -12,7 +13,7 @@ final class ErrorItemFactory {
         ItemStack item = new ItemStack(Material.BARRIER);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(ChatColor.RED + "Error");
+            meta.displayName(Component.text("Error", NamedTextColor.RED));
             item.setItemMeta(meta);
         }
         TEMPLATE = item;
@@ -25,4 +26,3 @@ final class ErrorItemFactory {
         return TEMPLATE.clone();
     }
 }
-

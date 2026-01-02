@@ -46,4 +46,3 @@ final class DefaultMenuClickContext implements MenuClickContext {
         close.run();
     }
 }
-

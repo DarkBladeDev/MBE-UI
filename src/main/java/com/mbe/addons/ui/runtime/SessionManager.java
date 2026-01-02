@@ -1,6 +1,7 @@
 package com.mbe.addons.ui.runtime;
 
 import com.darkbladedev.engine.api.addon.AddonContext;
+import com.darkbladedev.engine.api.logging.EngineLogger;
 import com.mbe.addons.ui.api.MenuController;
 import com.mbe.addons.ui.api.UIMenu;
 import org.bukkit.Bukkit;
@@ -17,18 +18,26 @@ public final class SessionManager implements MenuController {
 
     public SessionManager(AddonContext context) {
         this.context = context;
-        DiffEngine diffEngine = new DiffEngine(context.getLogger());
-        this.inventoryRenderer = new InventoryRenderer(diffEngine, context.getLogger());
+        EngineLogger logger = context.getLogger();
+        DiffEngine diffEngine = new DiffEngine(logger);
+        this.inventoryRenderer = new InventoryRenderer(diffEngine, logger);
     }
 
     @Override
     public void open(UIMenu menu, Player player) {
+        open(menu, player, null);
+    }
+
+    public void open(UIMenu menu, Player player, Map<String, Object> initialSessionData) {
         if (!Bukkit.isPrimaryThread()) {
-            context.runTask(() -> open(menu, player));
+            context.runTask(() -> open(menu, player, initialSessionData));
             return;
         }
 
         MenuSession session = new MenuSession(menu, player);
+        if (initialSessionData != null && !initialSessionData.isEmpty()) {
+            session.sessionData().putAll(initialSessionData);
+        }
         sessions.put(player.getUniqueId(), session);
         inventoryRenderer.open(session, player);
     }

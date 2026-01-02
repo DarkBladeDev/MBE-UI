@@ -5,8 +5,10 @@ import com.mbe.addons.ui.api.MenuItem;
 import com.mbe.addons.ui.api.PlayerContext;
 import com.mbe.addons.ui.ux.engine.model.ActionCall;
 import com.mbe.addons.ui.ux.engine.model.SlotDefinition;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
-import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -17,6 +19,9 @@ import java.util.Map;
 import java.util.Objects;
 
 public final class DeclarativeMenuItem implements MenuItem {
+    private static final LegacyComponentSerializer LEGACY_SECTION = LegacyComponentSerializer.legacySection();
+    private static final LegacyComponentSerializer LEGACY_AMP = LegacyComponentSerializer.legacyAmpersand();
+
     private final MenuRuntime runtime;
     private final String menuId;
     private final SlotDefinition slot;
@@ -46,15 +51,15 @@ public final class DeclarativeMenuItem implements MenuItem {
             MenuContext merged = mergedContext(renderCtx);
 
             if (slot.name() != null && !slot.name().isBlank()) {
-                meta.setDisplayName(runtime.resolveText(slot.name(), merged, cache));
+                meta.displayName(legacyText(runtime.resolveText(slot.name(), merged, cache)));
             }
 
             if (slot.lore() != null && !slot.lore().isEmpty()) {
-                List<String> lore = new ArrayList<>(slot.lore().size());
+                List<Component> lore = new ArrayList<>(slot.lore().size());
                 for (String line : slot.lore()) {
-                    lore.add(runtime.resolveText(line, merged, cache));
+                    lore.add(legacyText(runtime.resolveText(line, merged, cache)));
                 }
-                meta.setLore(lore);
+                meta.lore(lore);
             }
 
             stack.setItemMeta(meta);
@@ -110,9 +115,19 @@ public final class DeclarativeMenuItem implements MenuItem {
         ItemStack item = new ItemStack(Material.BARRIER);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(ChatColor.RED + "Error");
+            meta.displayName(Component.text("Error", NamedTextColor.RED));
             item.setItemMeta(meta);
         }
         return item;
+    }
+
+    private static Component legacyText(String text) {
+        if (text == null || text.isBlank()) {
+            return Component.empty();
+        }
+        if (text.indexOf('§') >= 0) {
+            return LEGACY_SECTION.deserialize(text);
+        }
+        return LEGACY_AMP.deserialize(text);
     }
 }

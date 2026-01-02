@@ -1,4 +1,4 @@
-package com.mbe.addons.ui.api;
+package com.mbe.addons.ui.ui;
 
 import java.util.Map;
 

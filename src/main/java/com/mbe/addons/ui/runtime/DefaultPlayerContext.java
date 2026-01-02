@@ -36,4 +36,3 @@ final class DefaultPlayerContext implements PlayerContext {
         return sessionData;
     }
 }
-

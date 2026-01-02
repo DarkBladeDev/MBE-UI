@@ -1,12 +1,14 @@
 package com.mbe.addons.ui.ux.engine.runtime;
 
 import com.darkbladedev.engine.api.addon.AddonContext;
+import com.darkbladedev.engine.api.logging.EngineLogger;
+import com.darkbladedev.engine.api.logging.LogLevel;
 import com.darkbladedev.engine.model.MultiblockInstance;
 import com.mbe.addons.ui.api.MenuId;
 import com.mbe.addons.ui.api.MenuView;
 import com.mbe.addons.ui.api.PlayerContext;
 import com.mbe.addons.ui.api.UIMenu;
-import com.mbe.addons.ui.api.UI;
+import com.mbe.addons.ui.ui.UI;
 import com.mbe.addons.ui.runtime.SessionManager;
 import com.mbe.addons.ui.ux.engine.MenuContextFactory;
 import com.mbe.addons.ui.ux.engine.MenuEngine;
@@ -22,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public final class MenuRuntime {
     private static final String KEY_MENU_ID = "ux.menuId";
@@ -34,12 +34,12 @@ public final class MenuRuntime {
     private final AddonContext context;
     private final MenuEngine engine;
     private final MenuRenderer renderer;
-    private final Logger logger;
+    private final EngineLogger logger;
     private final VariableResolver variableResolver;
 
     private final ThreadLocal<RuntimeFrame> frame = new ThreadLocal<>();
 
-    public MenuRuntime(AddonContext context, MenuEngine engine, MenuRenderer renderer, Logger logger) {
+    public MenuRuntime(AddonContext context, MenuEngine engine, MenuRenderer renderer, EngineLogger logger) {
         this.context = Objects.requireNonNull(context, "context");
         this.engine = Objects.requireNonNull(engine, "engine");
         this.renderer = Objects.requireNonNull(renderer, "renderer");
@@ -66,21 +66,17 @@ public final class MenuRuntime {
             int size = def != null ? def.size() : 27;
             UIMenu menu = new DeclarativeMenu(menuId, size, this);
 
-            UI.controller().open(menu, factory.player());
-
             if (UI.controller() instanceof SessionManager sm) {
-                Map<String, Object> session = sm.sessionData(factory.player());
-                session.put(KEY_MENU_ID, menuId);
-                session.put(KEY_VARS, vars);
-                session.put(KEY_MB, mb.orElse(null));
-                session.put(KEY_PAGE, 0);
+                sm.open(menu, factory.player(), tmpSession);
+            } else {
+                UI.controller().open(menu, factory.player());
             }
 
             UI.controller().refresh(factory.player());
         });
     }
 
-    MenuView render(PlayerContext uiCtx) {
+    public MenuView render(PlayerContext uiCtx) {
         Objects.requireNonNull(uiCtx, "uiCtx");
 
         Map<String, Object> session = uiCtx.sessionData();
@@ -97,12 +93,12 @@ public final class MenuRuntime {
         RuntimeBackedMenuContext ctx = new RuntimeBackedMenuContext(uiCtx.player(), menuId, page, vars, mb, session);
         MenuDefinition def = resolveDefinition(menuId, ctx).orElse(null);
         if (def == null) {
-            logger.warning("[UXAddon][Menu:" + menuId + "][Action:render] Cause: MenuNotFoundException");
+            logger.warn("[UXAddon][Menu:" + menuId + "][Action:render] Cause: MenuNotFoundException");
             return () -> Map.of();
         }
 
         if (def.rows() < 1 || def.rows() > 6) {
-            logger.warning("[UXAddon][Menu:" + menuId + "][Action:render] Cause: InvalidRows");
+            logger.warn("[UXAddon][Menu:" + menuId + "][Action:render] Cause: InvalidRows");
             return () -> Map.of();
         }
 
@@ -237,7 +233,7 @@ public final class MenuRuntime {
                 MenuDefinition def = provider.get().create(ctx);
                 return Optional.ofNullable(def);
             } catch (Throwable t) {
-                logger.log(Level.WARNING, "[UXAddon][Menu:" + menuId + "][Action:provider] Cause: " + t.getClass().getSimpleName(), t);
+                logger.log(LogLevel.WARN, "[UXAddon][Menu:" + menuId + "][Action:provider] Cause: " + t.getClass().getSimpleName(), t);
             }
         }
         return engine.getMenuDefinition(menuId);
