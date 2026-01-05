@@ -2,8 +2,8 @@ package com.mbe.addons.ui.runtime;
 
 import com.darkbladedev.engine.api.addon.AddonContext;
 import com.darkbladedev.engine.api.logging.EngineLogger;
-import com.mbe.addons.ui.api.MenuController;
-import com.mbe.addons.ui.api.UIMenu;
+import com.mbe.ui.api.menu.MenuController;
+import com.mbe.ui.api.menu.UIMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 

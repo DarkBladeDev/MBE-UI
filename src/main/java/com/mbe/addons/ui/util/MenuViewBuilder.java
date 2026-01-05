@@ -1,21 +1,23 @@
 package com.mbe.addons.ui.util;
 
-import com.mbe.addons.ui.api.MenuClickContext;
-import com.mbe.addons.ui.api.MenuItem;
-import com.mbe.addons.ui.api.MenuView;
-import com.mbe.addons.ui.api.PlayerContext;
+import com.mbe.ui.api.menu.MenuClickContext;
+import com.mbe.ui.api.menu.MenuItem;
+import com.mbe.ui.api.menu.MenuView;
+import com.mbe.ui.api.menu.PlayerContext;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class MenuViewBuilder {
     private final Map<Integer, MenuItem> items = new HashMap<>();
+    private MenuItem filler;
 
     private MenuViewBuilder() {
     }
@@ -33,6 +35,11 @@ public final class MenuViewBuilder {
         } else {
             items.put(slot, item);
         }
+        return this;
+    }
+
+    public MenuViewBuilder filler(MenuItem item) {
+        this.filler = item;
         return this;
     }
 
@@ -54,7 +61,18 @@ public final class MenuViewBuilder {
 
     public MenuView build() {
         Map<Integer, MenuItem> snapshot = Collections.unmodifiableMap(new HashMap<>(items));
-        return () -> snapshot;
+        MenuItem fillerSnapshot = filler;
+        return new MenuView() {
+            @Override
+            public Map<Integer, MenuItem> items() {
+                return snapshot;
+            }
+
+            @Override
+            public Optional<MenuItem> filler() {
+                return Optional.ofNullable(fillerSnapshot);
+            }
+        };
     }
 
     public static MenuItem item(Function<PlayerContext, ItemStack> renderer, Consumer<MenuClickContext> onClick) {

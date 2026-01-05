@@ -7,7 +7,7 @@ import com.mbe.addons.ui.legacy.services.UiSessionService;
 import com.mbe.addons.ui.legacy.services.ux.UiUxActionsService;
 import com.mbe.addons.ui.legacy.services.ux.UiUxMenusService;
 import com.mbe.addons.ui.legacy.services.ux.UiUxRuntimeService;
-import com.mbe.addons.ui.api.MenuController;
+import com.mbe.ui.api.menu.MenuController;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

@@ -1,8 +1,8 @@
 package com.mbe.addons.ui.services.impl.ux;
 
 import com.mbe.addons.ui.legacy.services.ux.UiUxRuntimeService;
-import com.mbe.addons.ui.api.MenuView;
-import com.mbe.addons.ui.api.PlayerContext;
+import com.mbe.ui.api.menu.MenuView;
+import com.mbe.ui.api.menu.PlayerContext;
 import com.mbe.addons.ui.ux.engine.runtime.MenuRuntime;
 
 import java.util.Objects;

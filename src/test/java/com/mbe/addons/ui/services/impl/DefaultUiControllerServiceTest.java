@@ -1,7 +1,7 @@
 package com.mbe.addons.ui.services.impl;
 
-import com.mbe.addons.ui.api.MenuController;
-import com.mbe.addons.ui.api.UIMenu;
+import com.mbe.ui.api.menu.MenuController;
+import com.mbe.ui.api.menu.UIMenu;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.Test;
 

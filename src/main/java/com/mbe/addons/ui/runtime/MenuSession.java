@@ -1,7 +1,7 @@
 package com.mbe.addons.ui.runtime;
 
-import com.mbe.addons.ui.api.MenuView;
-import com.mbe.addons.ui.api.UIMenu;
+import com.mbe.ui.api.menu.MenuView;
+import com.mbe.ui.api.menu.UIMenu;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 

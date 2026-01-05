@@ -1,6 +1,6 @@
 package com.mbe.addons.ui.services.impl.ux;
 
-import com.mbe.addons.ui.api.MenuView;
+import com.mbe.ui.api.menu.MenuView;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;

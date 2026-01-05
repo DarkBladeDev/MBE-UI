@@ -1,6 +1,6 @@
 package com.mbe.addons.ui.ux.engine.view;
 
-import com.mbe.addons.ui.api.MenuView;
+import com.mbe.ui.api.menu.MenuView;
 import com.mbe.addons.ui.util.MenuViewBuilder;
 import com.mbe.addons.ui.ux.engine.model.MenuDefinition;
 import com.mbe.addons.ui.ux.engine.model.PaginationDefinition;

@@ -1,8 +1,8 @@
 package com.mbe.addons.ui.ux.engine.runtime;
 
-import com.mbe.addons.ui.api.MenuClickContext;
-import com.mbe.addons.ui.api.MenuItem;
-import com.mbe.addons.ui.api.PlayerContext;
+import com.mbe.ui.api.menu.MenuClickContext;
+import com.mbe.ui.api.menu.MenuItem;
+import com.mbe.ui.api.menu.PlayerContext;
 import com.mbe.addons.ui.ux.engine.model.ActionCall;
 import com.mbe.addons.ui.ux.engine.model.SlotDefinition;
 import net.kyori.adventure.text.Component;

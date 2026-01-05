@@ -1,8 +1,8 @@
 package com.mbe.addons.ui.runtime;
 
-import com.mbe.addons.ui.api.MenuItem;
-import com.mbe.addons.ui.api.MenuView;
-import com.mbe.addons.ui.api.PlayerContext;
+import com.mbe.ui.api.menu.MenuItem;
+import com.mbe.ui.api.menu.MenuView;
+import com.mbe.ui.api.menu.PlayerContext;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -29,9 +29,19 @@ final class DiffEngine {
         Map<Integer, MenuItem> newItems = newView.items();
         Map<Integer, MenuItem> oldItems = oldView != null ? oldView.items() : Map.of();
 
+        MenuItem newFiller = newView.filler().orElse(null);
+        MenuItem oldFiller = oldView != null ? oldView.filler().orElse(null) : null;
+
         for (int slot = 0; slot < size; slot++) {
             MenuItem newItem = newItems.get(slot);
+            if (newItem == null) {
+                newItem = newFiller;
+            }
+
             MenuItem oldItem = oldItems.get(slot);
+            if (oldItem == null) {
+                oldItem = oldFiller;
+            }
 
             boolean sameRef = newItem != null && newItem == oldItem;
             if (sameRef) {

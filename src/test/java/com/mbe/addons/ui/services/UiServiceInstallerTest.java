@@ -6,8 +6,8 @@ import com.mbe.addons.ui.legacy.services.UiSessionService;
 import com.mbe.addons.ui.legacy.services.ux.UiUxActionsService;
 import com.mbe.addons.ui.legacy.services.ux.UiUxMenusService;
 import com.mbe.addons.ui.legacy.services.ux.UiUxRuntimeService;
-import com.mbe.addons.ui.api.MenuController;
-import com.mbe.addons.ui.api.UIMenu;
+import com.mbe.ui.api.menu.MenuController;
+import com.mbe.ui.api.menu.UIMenu;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.Test;
 

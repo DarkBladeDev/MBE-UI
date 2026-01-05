@@ -1,7 +1,7 @@
 package com.mbe.addons.ui.runtime;
 
-import com.mbe.addons.ui.api.MenuItem;
-import com.mbe.addons.ui.api.MenuView;
+import com.mbe.ui.api.menu.MenuItem;
+import com.mbe.ui.api.menu.MenuView;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -100,6 +100,10 @@ public final class ClickDispatcher implements Listener {
                     playerContext,
                     event.getClick(),
                     slot,
+                    event::getCursor,
+                    event::setCursor,
+                    event::getCurrentItem,
+                    event::setCurrentItem,
                     () -> sessionManager.refresh(player),
                     () -> sessionManager.close(player)
             );

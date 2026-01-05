@@ -1,6 +1,6 @@
 package com.mbe.addons.ui.runtime;
 
-import com.mbe.addons.ui.api.PlayerContext;
+import com.mbe.ui.api.menu.PlayerContext;
 import org.bukkit.entity.Player;
 
 import java.util.Locale;

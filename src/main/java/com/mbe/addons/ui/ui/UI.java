@@ -1,6 +1,6 @@
 package com.mbe.addons.ui.ui;
 
-import com.mbe.addons.ui.api.MenuController;
+import com.mbe.ui.api.menu.MenuController;
 
 public final class UI {
     private static volatile MenuController controller;

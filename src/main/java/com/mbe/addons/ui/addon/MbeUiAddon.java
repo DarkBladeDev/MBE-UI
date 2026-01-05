@@ -5,7 +5,7 @@ import com.darkbladedev.engine.api.addon.AddonException;
 import com.darkbladedev.engine.api.addon.MultiblockAddon;
 import com.darkbladedev.engine.api.logging.EngineLogger;
 import com.darkbladedev.engine.api.logging.LogLevel;
-import com.mbe.addons.ui.api.MenuController;
+import com.mbe.ui.api.menu.MenuController;
 import com.mbe.addons.ui.ui.UI;
 import com.mbe.addons.ui.runtime.ClickDispatcher;
 import com.mbe.addons.ui.runtime.SessionManager;
